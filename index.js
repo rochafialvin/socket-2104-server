@@ -15,10 +15,21 @@ app.get("/", (req, res) => {
 
 // websocket
 io.on("connection", (socket) => {
-  // create event listener
-  socket.on("kirimpesan", (data) => {
-    // data : {pesan : "Hello"}
-    console.log(`seseorang telah mengirim pesan : ${data.pesan} `);
+  // create event listener untuk join room
+  socket.on("join-room", (data) => {
+    // data : { username: ... , room: ... }
+    const { username, room } = data;
+    socket.join(room);
+
+    const message = { body: `${username} has joined` };
+
+    io.to(room).emit("recieve-message", message);
+  });
+
+  // Menerima pesan yang dikirim dari client
+  socket.on("send-message", (message) => {
+    // Trigger event pada room tertentu / Mengirim pesan ke room tertentu
+    io.to(message.room).emit("recieve-message", message);
   });
 });
 
